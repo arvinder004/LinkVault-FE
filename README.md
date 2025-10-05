@@ -1,1 +1,1 @@
-# LinkVault
+# LinkVault - Frontend
