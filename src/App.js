@@ -4,6 +4,7 @@ import Signup from './components/Signup';
 import Signin from './components/Signin';
 import Dashboard from './components/Dashboard';
 import SharedPage from './components/SharedPage';
+import Home from './components/Home';
 
 function App() {
   return (
@@ -15,7 +16,7 @@ function App() {
             <Route path="/signin" element={<Signin />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/shared/:token" element={<SharedPage />} />
-            <Route path="/" element={<Signin />} />
+            <Route path="/" element={<Home />} />
           </Routes>
         </div>
       </div>
