@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { getLinks, addLink, deleteLink, generateShare } from '../services/api';
 import AddLink from './AddLink';
 import LinksList from './LinksList';
-import Navbar from './Navbar';
 
 const Dashboard = () => {
   const [links, setLinks] = useState([]);
