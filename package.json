@@ -12,6 +12,8 @@
     "framer-motion": "^12.23.22",
     "jwt-decode": "^4.0.0",
     "react": "^19.2.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.3",
     "react-scripts": "5.0.1",
