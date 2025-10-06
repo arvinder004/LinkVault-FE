@@ -18,6 +18,8 @@ API.interceptors.response.use(
   }
 );
 
+export const signin = () => API.post('/signin')
+export const signup = () => API.post('/signup')
 export const getLinks = () => API.get('/links');
 export const addLink = (link) => API.post('/links', link);
 export const deleteLink = (id) => API.delete(`/links/${id}`);
