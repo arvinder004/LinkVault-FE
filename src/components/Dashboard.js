@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getLinks, addLink, deleteLink, generateShare } from '../services/api';
 import AddLink from './AddLink';
@@ -6,7 +6,7 @@ import AddLinkModal from './AddLinkModal';
 import ShareLinkModal from './ShareLinkModal';
 import LinksList from './LinksList';
 import Loading from './Loading';
-import { ClipboardIcon, PlusIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, ShareIcon } from '@heroicons/react/24/outline';
 
 const Dashboard = () => {
   const [links, setLinks] = useState([]);
