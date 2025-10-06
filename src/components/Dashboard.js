@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getLinks, addLink, deleteLink, generateShare } from '../services/api';
 import AddLink from './AddLink';
@@ -14,23 +14,23 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Show modal if no links
-  const showAddLinkModal = () => {
+  // Memoize showAddLinkModal to prevent re-creation
+  const showAddLinkModal = useCallback(() => {
     if (links.length === 0 && !isLoading) {
       setIsModalOpen(true);
     } else {
       setIsModalOpen(false);
     }
-  };
+  }, [links, isLoading]);
 
   useEffect(() => {
     fetchLinks();
   }, []);
 
-  // Update modal visibility when links change
+  // Update modal visibility when links or isLoading change
   useEffect(() => {
     showAddLinkModal();
-  }, [links, isLoading]);
+  }, [links, isLoading, showAddLinkModal]);
 
   // Clear message after 3 seconds
   useEffect(() => {
