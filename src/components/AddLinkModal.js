@@ -53,7 +53,7 @@ const AddLinkModal = ({ isOpen, onClose, onAdd }) => {
 
             {/* Modal Header */}
             <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-300 via-cyan-200 to-purple-300 bg-clip-text text-transparent mb-6">
-              Add Your First Link
+              Add Your Link
             </h2>
 
             {/* AddLink Form */}

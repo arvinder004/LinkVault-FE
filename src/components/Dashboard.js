@@ -219,11 +219,11 @@ const Dashboard = () => {
         </motion.div>
 
         {/* Add Link Form (shown only when links exist) */}
-        {links.length > 0 && (
+        {/* {links.length > 0 && (
           <motion.div variants={itemVariants}>
             <AddLink onAdd={handleAddLink} />
           </motion.div>
-        )}
+        )} */}
       </motion.div>
     </section>
   );
