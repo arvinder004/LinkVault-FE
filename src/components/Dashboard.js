@@ -26,10 +26,21 @@ const Dashboard = () => {
     setMessage({ text: '', type: '' });
     try {
       const { data } = await getLinks();
-      setLinks(data);
+      setLinks(data || []);  // Ensure empty array
+      console.log('Links fetched:', data);  // Debug log
     } catch (err) {
-      console.error(err);
-      setMessage({ text: 'Failed to fetch links.', type: 'error' });
+      console.error('Fetch Links Error Details:', {
+        message: err.message,
+        code: err.code,
+        response: err.response?.status,
+        config: err.config?.url
+      });
+      setMessage({ 
+        text: err.code === 'ERR_NETWORK' 
+          ? 'Network issue—check if backend is running on port 5000.' 
+          : 'Failed to fetch links. Please refresh.', 
+        type: 'error' 
+      });
     } finally {
       setIsLoading(false);
     }
