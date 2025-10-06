@@ -7,8 +7,6 @@ const Home = () => {
   return (
     <div>
       <div>Welcome to LinkVault</div>
-      <button onClick={() => navigate('/signup')}>Sign Up</button>
-      <button onClick={() => navigate('/signin')}>Sign In</button>
     </div>
   )
 }
