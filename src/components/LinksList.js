@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { PlayIcon, ChatBubbleLeftIcon, NewspaperIcon, LinkIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 const LinksList = ({ links, onDelete }) => {
-  // Map link types to icons
   const getIconForType = (type) => {
     switch (type) {
       case 'YouTube':
@@ -52,9 +51,7 @@ const LinksList = ({ links, onDelete }) => {
             className="backdrop-blur-md bg-white/10 p-6 rounded-2xl shadow-2xl border border-white/20 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all duration-300"
           >
             <div className="flex items-start space-x-4">
-              {/* Icon */}
               <div className="flex-shrink-0 mt-1">{getIconForType(link.type)}</div>
-              {/* Content */}
               <div className="flex-1">
                 <h5 className="text-lg font-semibold text-white">
                   {link.title} <span className="text-cyan-400 text-sm">({link.type})</span>
@@ -71,8 +68,24 @@ const LinksList = ({ links, onDelete }) => {
                 {link.description && (
                   <p className="text-gray-300 mt-2">{link.description}</p>
                 )}
+                {link.tags && link.tags.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {link.tags.map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="bg-cyan-400/20 text-cyan-400 text-sm px-2 py-1 rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {link.folder && (
+                  <p className="text-gray-400 text-sm mt-2">
+                    Folder: {link.folder.parent ? `${link.folder.parent.name} > ` : ''}{link.folder.name}
+                  </p>
+                )}
               </div>
-              {/* Delete Button */}
               {onDelete && (
                 <motion.button
                   variants={buttonVariants}
