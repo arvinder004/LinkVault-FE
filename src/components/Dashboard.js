@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getLinks, addLink, deleteLink, generateShare } from '../services/api';
 import AddLink from './AddLink';
+import AddLinkModal from './AddLinkModal';
 import LinksList from './LinksList';
 import Loading from './Loading';
 import { ClipboardIcon } from '@heroicons/react/24/outline';
@@ -11,10 +12,28 @@ const Dashboard = () => {
   const [shareLink, setShareLink] = useState('');
   const [message, setMessage] = useState({ text: '', type: '' });
   const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Show modal if no links
+  const showAddLinkModal = () => {
+    if (links.length === 0 && !isLoading) {
+      setIsModalOpen(true);
+    } else {
+      setIsModalOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLinks();
+  }, []);
+
+  // Update modal visibility when links change
+  useEffect(() => {
+    showAddLinkModal();
+  }, [links, isLoading]);
 
   // Clear message after 3 seconds
   useEffect(() => {
-    fetchLinks();
     if (message.text) {
       const timer = setTimeout(() => setMessage({ text: '', type: '' }), 3000);
       return () => clearTimeout(timer);
@@ -26,8 +45,8 @@ const Dashboard = () => {
     setMessage({ text: '', type: '' });
     try {
       const { data } = await getLinks();
-      setLinks(data || []);  // Ensure empty array
-      console.log('Links fetched:', data);  // Debug log
+      setLinks(data || []);
+      console.log('Links fetched:', data);
     } catch (err) {
       console.error('Fetch Links Error Details:', {
         message: err.message,
@@ -35,11 +54,11 @@ const Dashboard = () => {
         response: err.response?.status,
         config: err.config?.url
       });
-      setMessage({ 
-        text: err.code === 'ERR_NETWORK' 
-          ? 'Network issue—check if backend is running on port 5000.' 
-          : 'Failed to fetch links. Please refresh.', 
-        type: 'error' 
+      setMessage({
+        text: err.code === 'ERR_NETWORK'
+          ? 'Network issue—check if backend is running.'
+          : 'Failed to fetch links. Please refresh.',
+        type: 'error'
       });
     } finally {
       setIsLoading(false);
@@ -53,6 +72,7 @@ const Dashboard = () => {
       const { data } = await addLink(newLink);
       setLinks([data, ...links]);
       setMessage({ text: 'Link added successfully!', type: 'success' });
+      setIsModalOpen(false); // Close modal after adding link
     } catch (err) {
       console.error(err);
       setMessage({ text: 'Failed to add link.', type: 'error' });
@@ -123,6 +143,9 @@ const Dashboard = () => {
         {isLoading && <Loading message="Processing..." />}
       </AnimatePresence>
 
+      {/* Add Link Modal */}
+      <AddLinkModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={handleAddLink} />
+
       {/* Dashboard Content */}
       <motion.div
         variants={containerVariants}
@@ -151,15 +174,17 @@ const Dashboard = () => {
           )}
         </AnimatePresence>
 
-        {/* Add Link Form */}
-        <motion.div variants={itemVariants}>
-          <AddLink onAdd={handleAddLink} />
-        </motion.div>
-
         {/* Links List */}
         <motion.div variants={itemVariants}>
           <LinksList links={links} onDelete={handleDelete} />
         </motion.div>
+
+        {/* Add Link Form (shown only when links exist) */}
+        {links.length > 0 && (
+          <motion.div variants={itemVariants}>
+            <AddLink onAdd={handleAddLink} />
+          </motion.div>
+        )}
 
         {/* Share Link Section */}
         <motion.div variants={itemVariants} className="backdrop-blur-md bg-white/10 p-6 rounded-2xl shadow-2xl border border-white/20">
