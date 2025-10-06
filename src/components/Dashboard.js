@@ -3,34 +3,44 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getLinks, addLink, deleteLink, generateShare } from '../services/api';
 import AddLink from './AddLink';
 import AddLinkModal from './AddLinkModal';
+import ShareLinkModal from './ShareLinkModal';
 import LinksList from './LinksList';
 import Loading from './Loading';
-import { ClipboardIcon } from '@heroicons/react/24/outline';
+import { ClipboardIcon, PlusIcon, ShareIcon } from '@heroicons/react/24/outline';
 
 const Dashboard = () => {
   const [links, setLinks] = useState([]);
   const [shareLink, setShareLink] = useState('');
   const [message, setMessage] = useState({ text: '', type: '' });
   const [isLoading, setIsLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddLinkModalOpen, setIsAddLinkModalOpen] = useState(false);
+  const [isShareLinkModalOpen, setIsShareLinkModalOpen] = useState(false);
 
-  // Memoize showAddLinkModal to prevent re-creation
-  const showAddLinkModal = useCallback(() => {
-    if (links.length === 0 && !isLoading) {
-      setIsModalOpen(true);
-    } else {
-      setIsModalOpen(false);
+  // Handle manual Add Link modal open
+  const handleOpenAddLinkModal = () => {
+    setIsAddLinkModalOpen(true);
+  };
+
+  // Handle Share Links button click
+  const handleOpenShareLinkModal = async () => {
+    setIsLoading(true);
+    setMessage({ text: '', type: '' });
+    try {
+      const { data } = await generateShare();
+      setShareLink(data.shareLink);
+      setIsShareLinkModalOpen(true);
+      setMessage({ text: 'Share link generated!', type: 'success' });
+    } catch (err) {
+      console.error(err);
+      setMessage({ text: 'Failed to generate share link.', type: 'error' });
+    } finally {
+      setIsLoading(false);
     }
-  }, [links, isLoading]);
+  };
 
   useEffect(() => {
     fetchLinks();
   }, []);
-
-  // Update modal visibility when links or isLoading change
-  useEffect(() => {
-    showAddLinkModal();
-  }, [links, isLoading, showAddLinkModal]);
 
   // Clear message after 3 seconds
   useEffect(() => {
@@ -72,7 +82,7 @@ const Dashboard = () => {
       const { data } = await addLink(newLink);
       setLinks([data, ...links]);
       setMessage({ text: 'Link added successfully!', type: 'success' });
-      setIsModalOpen(false); // Close modal after adding link
+      setIsAddLinkModalOpen(false); // Close Add Link modal after adding link
     } catch (err) {
       console.error(err);
       setMessage({ text: 'Failed to add link.', type: 'error' });
@@ -96,21 +106,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleGenerateShare = async () => {
-    setIsLoading(true);
-    setMessage({ text: '', type: '' });
-    try {
-      const { data } = await generateShare();
-      setShareLink(data.shareLink);
-      setMessage({ text: 'Share link generated!', type: 'success' });
-    } catch (err) {
-      console.error(err);
-      setMessage({ text: 'Failed to generate share link.', type: 'error' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleCopyShareLink = () => {
     navigator.clipboard.writeText(shareLink);
     setMessage({ text: 'Share link copied to clipboard!', type: 'success' });
@@ -129,6 +124,11 @@ const Dashboard = () => {
     visible: { opacity: 1, y: 0 }
   };
 
+  const buttonVariants = {
+    hover: { scale: 1.05, boxShadow: '0 10px 20px rgba(59, 130, 246, 0.4)' },
+    tap: { scale: 0.95 }
+  };
+
   return (
     <section className="min-h-screen hero-gradient relative overflow-hidden py-12">
       {/* Floating Particles */}
@@ -144,7 +144,15 @@ const Dashboard = () => {
       </AnimatePresence>
 
       {/* Add Link Modal */}
-      <AddLinkModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={handleAddLink} />
+      <AddLinkModal isOpen={isAddLinkModalOpen} onClose={() => setIsAddLinkModalOpen(false)} onAdd={handleAddLink} />
+
+      {/* Share Link Modal */}
+      <ShareLinkModal
+        isOpen={isShareLinkModalOpen}
+        onClose={() => setIsShareLinkModalOpen(false)}
+        shareLink={shareLink}
+        onCopy={handleCopyShareLink}
+      />
 
       {/* Dashboard Content */}
       <motion.div
@@ -153,12 +161,27 @@ const Dashboard = () => {
         animate="visible"
         className="relative z-10 max-w-4xl mx-auto px-4 space-y-8"
       >
-        <motion.h2
-          variants={itemVariants}
-          className="text-4xl md:text-5xl font-bold text-center bg-gradient-to-r from-blue-300 via-cyan-200 to-purple-300 bg-clip-text text-transparent"
-        >
-          Your LinkVault Dashboard
-        </motion.h2>
+        {/* Header with Share Button */}
+        <div className="flex justify-between items-center">
+          <motion.h2
+            variants={itemVariants}
+            className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-300 via-cyan-200 to-purple-300 bg-clip-text text-transparent"
+          >
+            Your LinkVault Dashboard
+          </motion.h2>
+          <motion.button
+            variants={buttonVariants}
+            whileHover={isLoading ? {} : 'hover'}
+            whileTap={isLoading ? {} : 'tap'}
+            onClick={handleOpenShareLinkModal}
+            className={`flex items-center space-x-2 bg-gradient-to-r from-cyan-400 to-emerald-500 text-white py-2 px-4 rounded-lg font-semibold shadow-lg transition-all duration-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:from-cyan-500 hover:to-emerald-600'}`}
+            disabled={isLoading}
+            aria-label="Share your links"
+          >
+            <ShareIcon className="h-5 w-5" />
+            <span>Share Links</span>
+          </motion.button>
+        </div>
 
         {/* Message */}
         <AnimatePresence>
@@ -174,6 +197,22 @@ const Dashboard = () => {
           )}
         </AnimatePresence>
 
+        {/* Add Link Button */}
+        <motion.div variants={itemVariants} className="flex justify-center">
+          <motion.button
+            variants={buttonVariants}
+            whileHover={isLoading ? {} : 'hover'}
+            whileTap={isLoading ? {} : 'tap'}
+            onClick={handleOpenAddLinkModal}
+            className={`flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-lg font-semibold text-lg shadow-lg transition-all duration-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:from-blue-700 hover:to-indigo-700'}`}
+            disabled={isLoading}
+            aria-label="Add a new link"
+          >
+            <PlusIcon className="h-5 w-5" />
+            <span>Add Link</span>
+          </motion.button>
+        </motion.div>
+
         {/* Links List */}
         <motion.div variants={itemVariants}>
           <LinksList links={links} onDelete={handleDelete} />
@@ -185,44 +224,6 @@ const Dashboard = () => {
             <AddLink onAdd={handleAddLink} />
           </motion.div>
         )}
-
-        {/* Share Link Section */}
-        <motion.div variants={itemVariants} className="backdrop-blur-md bg-white/10 p-6 rounded-2xl shadow-2xl border border-white/20">
-          <motion.button
-            whileHover={{ scale: 1.05, boxShadow: '0 10px 20px rgba(59, 130, 246, 0.4)' }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleGenerateShare}
-            className={`w-full bg-gradient-to-r from-cyan-400 to-emerald-500 text-white py-3 rounded-lg font-semibold text-lg shadow-lg transition-all duration-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:from-cyan-500 hover:to-emerald-600'}`}
-            disabled={isLoading}
-          >
-            Generate Share Link
-          </motion.button>
-          {shareLink && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 flex items-center justify-between bg-white/5 p-4 rounded-lg border border-white/20"
-            >
-              <a
-                href={shareLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-cyan-400 hover:text-cyan-300 truncate flex-1"
-              >
-                {shareLink}
-              </a>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={handleCopyShareLink}
-                className="ml-2 p-2 bg-cyan-400/20 rounded-full hover:bg-cyan-400/30 transition-all duration-200"
-                aria-label="Copy share link"
-              >
-                <ClipboardIcon className="h-5 w-5 text-cyan-400" />
-              </motion.button>
-            </motion.div>
-          )}
-        </motion.div>
       </motion.div>
     </section>
   );
